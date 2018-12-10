@@ -1,5 +1,4 @@
-//#include <TimerOne.h>           //TimerOne isn't used anymore
-//#include <SD.h>                 //SD.h was replaced by SdFat.h in the process
+
 
 #include <avr/pgmspace.h>         //This is a built-in Arduino library, all credits and how-to-use at https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
 #include <Wire.h>                 //This lib handles I2C protocoll, all credits and how-to-use at https://www.arduino.cc/en/Reference/Wire
@@ -123,10 +122,6 @@ void setup() {
 
   delay(2000);
 
-  //Initialize Timer for ISR, triggers write_to_SD() every x seconds        //Timer interrupt not in use anymore
-  //Timer1.initialize(6*1000000);
-  //Timer initialized
-
   // Initialize SD card
   u8x8.setCursor(0, 0);
   u8x8.print(F("Initializing"));
@@ -204,7 +199,6 @@ void loop() {
   if (start_millis_loop <= (millis() - 6000))  {                  //this is for the hints regarding how to use the device
 
     start_millis_loop = millis();
-    //u8x8.clear();
     u8x8.setCursor(0, 4);
     u8x8.print(F("Press ""Settings"""));
     u8x8.setCursor(0, 5);
@@ -216,7 +210,6 @@ void loop() {
   if (start_millis_loop_plus3000 <= (millis() - 6000))  {         //this is for the hints regarding how to use the device
 
     start_millis_loop_plus3000 = millis();
-    //u8x8.clear();
     u8x8.setCursor(0, 4);
     u8x8.print(F("Press ""Start/  "));
     u8x8.setCursor(0, 5);
@@ -251,16 +244,8 @@ void loop() {
 
 void Settings() {             //Code for settings, please dont change anything here because it's kinda complex code ;
 
-
-  //u8x8.clear();
-  //  u8x8.setCursor(0, 0);
-  //  u8x8.print(F("Height: "));             //writes the menu interface on the screem
-  //  u8x8.setCursor(9, 0);
-  //  u8x8.print(temporary_height);
-  //  u8x8.setCursor(14, 0);
   u8x8.clear();
   animation("Enter settings.", 3);
-  //  u8x8.print(F("cm"));
   delay(1000); //Don't delete this delay! Necessary to have some delay for button inputs, otherwise we would possibly immediatly exit the menu if we press settings for too long
   u8x8.clear();
 
@@ -317,7 +302,6 @@ START2:
         if (start_millis_height_plus500 <= (millis() - 1000))  {
 
           start_millis_height_plus500 = millis();
-          //u8x8.clear();
           u8x8.setCursor(0, 0);
           u8x8.print(F("Height:         "));
         }
@@ -411,7 +395,6 @@ START3:
         if (start_millis_weight_plus500 <= (millis() - 1000))  {
 
           start_millis_weight_plus500 = millis();
-          //u8x8.clear();
           u8x8.setCursor(0, 0);
           u8x8.print(F("Weight:         "));
         }
@@ -522,7 +505,6 @@ START13:
         if (start_millis_gender_plus500 <= (millis() - 1000))  {
 
           start_millis_gender_plus500 = millis();
-          //u8x8.clear();
           u8x8.setCursor(0, 0);
           u8x8.print(F("Gender:         "));
         }
@@ -577,9 +559,6 @@ START13:
       }
 
       break;
-
-
-    ////////////////
 
     case 3:                                                               //for description look at case 0, works exactly the same, except for weight instead of height
 
@@ -695,11 +674,8 @@ START14:
       }
 
       break;
-
-
-      ////////////////
-
   }
+  
   delay(100);
 
   goto START;
@@ -712,6 +688,7 @@ END_SETTINGS:
   start_millis_loop_plus3000 = start_millis_loop + 3000;
   u8x8.clear();
   Serial.print(temporary_height);
+  
 }
 
 
@@ -754,6 +731,7 @@ void Running()  {
   if (EEPROM.read(address_gender) == "m")  {
     step_length = float(EEPROM.read(address_height)) * 45.0 / 100.0;
   }
+  
   else  {
     step_length = float(EEPROM.read(address_height)) * 43.0 / 100.0;
   }
@@ -813,11 +791,8 @@ void Running()  {
   runnings = true;
 
   attachInterrupt(digitalPinToInterrupt(pin_ISR_heartRate), heartRate, RISING);       //pin_ISR_heartRate
-  //attachInterrupt(digitalPinToInterrupt(pin_ISR_stepCount), stepCount, RISING);     //pin_ISR_stepCount
-  //Timer1.attachInterrupt(write_to_SD);
 
   unsigned long start_millis_save = millis();
-
 
   //Start of displaying to display
 START7:                                                                             //the following code will write all our information to display and calculate the variables
@@ -903,6 +878,7 @@ START5:
         u8x8.setCursor(12, 3);
         u8x8.print(F("km"));
       }
+      
       else  {
         distance = (((float)step_length * (float)steps_total) / 100000.0) / 1.609;
         u8x8.setCursor(12, 3);
@@ -943,6 +919,7 @@ START5:
         if (mode_running == 3) {
           mode_running = 0;
         }
+        
         delay(500);
         goto START7;
       }
@@ -1124,7 +1101,6 @@ void write_to_SD()  {
     beats_since = 0;
     steps_since = 0;
   }
-  //name of the variables in fisrt line for csv
 }
 
 void animation(char text[16], byte x) {                                                         //Animation for text on display
