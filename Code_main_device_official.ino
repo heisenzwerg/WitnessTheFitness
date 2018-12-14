@@ -51,7 +51,6 @@ byte bpm_new = 0;
 SdFat SD;
 #define SD_CS_PIN 5
 #define every_x_seconds 6   //run save_to_SD every x seconds
-//#define chipSelect 5   //Pin for selecting the SD card
 
 //variables for void loop
 byte mode_settings = 0;
@@ -70,7 +69,6 @@ char temporary_gender;
 char temporary_unit;
 
 const char run_started[16] = "Run starts in...";
-//const char welcome_back[16] = "Welcome back!";
 
 //this is for continous filenames, all credits to https://www.reddit.com/r/arduino/comments/2qe97j/help_with_dynamic_file_naming_for_a_datalogger/
 unsigned int number_of_files;
@@ -112,13 +110,6 @@ void setup() {
   animation2("Fitness ", 5);
   delay(3000);
 
-  //  if (Serial)  {
-  //    u8x8.setCursor(0, 0);
-  //    u8x8.print(F("Serial"));
-  //    u8x8.setCursor(0, 1);
-  //    u8x8.print(F("initialized!"));
-  //  }
-
   if (!Serial) {
     u8x8.clear();
     u8x8.setCursor(0, 3);
@@ -129,16 +120,6 @@ void setup() {
     u8x8.print(F("monitor steps!"));
     delay(2000);
   }
-
-  //Initialize Timer for ISR, triggers write_to_SD() every x seconds        //Timer interrupt not in use anymore
-  //Timer1.initialize(6*1000000);
-  //Timer initialized
-
-  // Initialize SD card
-  //  u8x8.setCursor(0, 0);
-  //  u8x8.print(F("Initializing"));
-  //  u8x8.setCursor(0, 1);
-  //  u8x8.print(F("SD card...! "));
 
   delay(1500);
   if (!SD.begin(SD_CS_PIN)) {     //SD_CS_PIN to select the proper pin
@@ -152,12 +133,6 @@ void setup() {
     u8x8.print(F("your sessions!"));
     delay(2000);
   }
-
-  //  u8x8.setCursor(0, 4);
-  //  u8x8.print(F("Initialization"));
-  //  u8x8.setCursor(0, 5);
-  //  u8x8.print(F("done! "));
-  //SD card initialized
 
   //Initialize EEPROM and read settings from there
   if (EEPROM.read(address_height) == 255)  {    //address_height
@@ -256,16 +231,8 @@ void loop() {
 
 void Settings() {             //Code for settings, please dont change anything here because it's kinda complex code ;
 
-
-  //u8x8.clear();
-  //  u8x8.setCursor(0, 0);
-  //  u8x8.print(F("Height: "));             //writes the menu interface on the screem
-  //  u8x8.setCursor(9, 0);
-  //  u8x8.print(temporary_height);
-  //  u8x8.setCursor(14, 0);
   u8x8.clear();
   animation("Enter settings.", 3);
-  //  u8x8.print(F("cm"));
   delay(1000); //Don't delete this delay! Necessary to have some delay for button inputs, otherwise we would possibly immediatly exit the menu if we press settings for too long
   u8x8.clear();
 
@@ -349,7 +316,6 @@ START2:
           EEPROM.write(address_height, temporary_height);   //address_height
           u8x8.clear();
           animation("Saved!         ", 3);
-          //u8x8.print(Serial.read());      //debugging info
           delay(2000);
           u8x8.clear();
           goto START;
@@ -580,9 +546,6 @@ START13:
 
       break;
 
-
-    ////////////////
-
     case 3:                                                               //for description look at case 0, works exactly the same, except for weight instead of height
 
       u8x8.setCursor(0, 0);
@@ -697,10 +660,6 @@ START14:
       }
 
       break;
-
-
-      ////////////////
-
   }
   delay(100);
 
@@ -815,8 +774,6 @@ void Running()  {
   runnings = true;
 
   attachInterrupt(digitalPinToInterrupt(pin_ISR_heartRate), heartRate, RISING);       //pin_ISR_heartRate
-  //attachInterrupt(digitalPinToInterrupt(pin_ISR_stepCount), stepCount, RISING);     //pin_ISR_stepCount
-  //Timer1.attachInterrupt(write_to_SD);
 
   unsigned long start_millis_save = millis();
 
@@ -963,7 +920,6 @@ START5:
 
       break;
 
-
     case 2:                                                                                 //case 2 is for displaying avg speed and avg steps per min
 
       u8x8.clear();
@@ -1031,7 +987,6 @@ START15:
       break;
   }
   //end of displaying to display
-
 
 END_RUNNING:
 
