@@ -1,4 +1,5 @@
-
+//#include <TimerOne.h>           //TimerOne isn't used anymore
+//#include <SD.h>                 //SD.h was replaced by SdFat.h in the process
 
 #include <avr/pgmspace.h>         //This is a built-in Arduino library, all credits and how-to-use at https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
 #include <Wire.h>                 //This lib handles I2C protocoll, all credits and how-to-use at https://www.arduino.cc/en/Reference/Wire
@@ -69,7 +70,7 @@ char temporary_gender;
 char temporary_unit;
 
 const char run_started[16] = "Run starts in...";
-const char welcome_back[16] = "Welcome back!";
+//const char welcome_back[16] = "Welcome back!";
 
 //this is for continous filenames, all credits to https://www.reddit.com/r/arduino/comments/2qe97j/help_with_dynamic_file_naming_for_a_datalogger/
 unsigned int number_of_files;
@@ -105,43 +106,57 @@ void setup() {
 
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
-  if (Serial)  {
-    u8x8.setCursor(0, 0);
-    u8x8.print(F("Serial"));
-    u8x8.setCursor(0, 1);
-    u8x8.print(F("initialized!"));
+
+  animation2("Witness ", 1);
+  animation2("  The   ", 3);
+  animation2("Fitness ", 5);
+  delay(3000);
+
+  //  if (Serial)  {
+  //    u8x8.setCursor(0, 0);
+  //    u8x8.print(F("Serial"));
+  //    u8x8.setCursor(0, 1);
+  //    u8x8.print(F("initialized!"));
+  //  }
+
+  if (!Serial) {
+    u8x8.clear();
+    u8x8.setCursor(0, 3);
+    u8x8.print(F("Please connect the"));
+    u8x8.setCursor(0, 4);
+    u8x8.print(F("pedometer to"));
+    u8x8.setCursor(0, 4);
+    u8x8.print(F("monitor steps!"));
+    delay(2000);
   }
 
-  else {
-    u8x8.setCursor(0, 0);
-    u8x8.print(F("Serial cannot"));
-    u8x8.setCursor(0, 1);
-    u8x8.print(F("be initialized!"));
-    while (1);
-  }
-
-  delay(2000);
+  //Initialize Timer for ISR, triggers write_to_SD() every x seconds        //Timer interrupt not in use anymore
+  //Timer1.initialize(6*1000000);
+  //Timer initialized
 
   // Initialize SD card
-  u8x8.setCursor(0, 0);
-  u8x8.print(F("Initializing"));
-  u8x8.setCursor(0, 1);
-  u8x8.print(F("SD card...! "));
+  //  u8x8.setCursor(0, 0);
+  //  u8x8.print(F("Initializing"));
+  //  u8x8.setCursor(0, 1);
+  //  u8x8.print(F("SD card...! "));
 
   delay(1500);
   if (!SD.begin(SD_CS_PIN)) {     //SD_CS_PIN to select the proper pin
 
+    u8x8.clear();
+    u8x8.setCursor(0, 3);
+    u8x8.print(F("Please insert a"));
     u8x8.setCursor(0, 4);
-    u8x8.print(F("Initialization"));
+    u8x8.print(F("SD card to log"));
     u8x8.setCursor(0, 5);
-    u8x8.print(F("failed!"));
-    while (1); //infinite loop
+    u8x8.print(F("your sessions!"));
+    delay(2000);
   }
 
-  u8x8.setCursor(0, 4);
-  u8x8.print(F("Initialization"));
-  u8x8.setCursor(0, 5);
-  u8x8.print(F("done! "));
+  //  u8x8.setCursor(0, 4);
+  //  u8x8.print(F("Initialization"));
+  //  u8x8.setCursor(0, 5);
+  //  u8x8.print(F("done! "));
   //SD card initialized
 
   //Initialize EEPROM and read settings from there
@@ -162,11 +177,6 @@ void setup() {
   }
   //EEPROM initialized
 
-  delay(2000);
-
-  u8x8.clear();
-  animation(welcome_back, 3);
-  delay(3000);
   u8x8.clear();
 
   start_millis_loop = millis();
@@ -199,6 +209,7 @@ void loop() {
   if (start_millis_loop <= (millis() - 6000))  {                  //this is for the hints regarding how to use the device
 
     start_millis_loop = millis();
+    //u8x8.clear();
     u8x8.setCursor(0, 4);
     u8x8.print(F("Press ""Settings"""));
     u8x8.setCursor(0, 5);
@@ -210,6 +221,7 @@ void loop() {
   if (start_millis_loop_plus3000 <= (millis() - 6000))  {         //this is for the hints regarding how to use the device
 
     start_millis_loop_plus3000 = millis();
+    //u8x8.clear();
     u8x8.setCursor(0, 4);
     u8x8.print(F("Press ""Start/  "));
     u8x8.setCursor(0, 5);
@@ -244,8 +256,16 @@ void loop() {
 
 void Settings() {             //Code for settings, please dont change anything here because it's kinda complex code ;
 
+
+  //u8x8.clear();
+  //  u8x8.setCursor(0, 0);
+  //  u8x8.print(F("Height: "));             //writes the menu interface on the screem
+  //  u8x8.setCursor(9, 0);
+  //  u8x8.print(temporary_height);
+  //  u8x8.setCursor(14, 0);
   u8x8.clear();
   animation("Enter settings.", 3);
+  //  u8x8.print(F("cm"));
   delay(1000); //Don't delete this delay! Necessary to have some delay for button inputs, otherwise we would possibly immediatly exit the menu if we press settings for too long
   u8x8.clear();
 
@@ -278,10 +298,8 @@ START:
       }
       if (digitalRead(pin_select) == HIGH) {   //if select pin is pressed, we can access and increase the variable height; this is a loop that repeatedly starts at Start2 again and again
 
-        u8x8.setCursor(9, 0);
-        u8x8.print(F("   "));
         u8x8.setCursor(0, 0);
-        u8x8.print(F("Height: "));                                    //line 144 to line 163 makes the selected variable blink
+        u8x8.print(F("Height:         "));                                   //line 144 to line 163 makes the selected variable blink
         unsigned long start_millis_height = millis();
         unsigned long start_millis_height_plus500 = start_millis_height + 500;       //both start_millis variables are needed for blinking
         delay(500);                                                               //delay is important here
@@ -302,6 +320,7 @@ START2:
         if (start_millis_height_plus500 <= (millis() - 1000))  {
 
           start_millis_height_plus500 = millis();
+          //u8x8.clear();
           u8x8.setCursor(0, 0);
           u8x8.print(F("Height:         "));
         }
@@ -330,6 +349,7 @@ START2:
           EEPROM.write(address_height, temporary_height);   //address_height
           u8x8.clear();
           animation("Saved!         ", 3);
+          //u8x8.print(Serial.read());      //debugging info
           delay(2000);
           u8x8.clear();
           goto START;
@@ -371,10 +391,8 @@ START2:
       }
       if (digitalRead(pin_select) == HIGH) {   //if select pin is pressed, we can access and increase the variable weight; this is a loop that repeatedly starts at Start2 again and again
 
-        u8x8.setCursor(9, 0);
-        u8x8.print(F("   "));
         u8x8.setCursor(0, 0);
-        u8x8.print(F("Weight: "));                                    //line 144 to line 163 makes the selected variable blink
+        u8x8.print(F("Weight:         "));                                   //line 144 to line 163 makes the selected variable blink
         unsigned long start_millis_weight = millis();
         unsigned long start_millis_weight_plus500 = start_millis_weight + 500;       //both start_millis variables are needed for blinking
         delay(500);                                                               //delay is important here
@@ -395,6 +413,7 @@ START3:
         if (start_millis_weight_plus500 <= (millis() - 1000))  {
 
           start_millis_weight_plus500 = millis();
+          //u8x8.clear();
           u8x8.setCursor(0, 0);
           u8x8.print(F("Weight:         "));
         }
@@ -505,6 +524,7 @@ START13:
         if (start_millis_gender_plus500 <= (millis() - 1000))  {
 
           start_millis_gender_plus500 = millis();
+          //u8x8.clear();
           u8x8.setCursor(0, 0);
           u8x8.print(F("Gender:         "));
         }
@@ -559,6 +579,9 @@ START13:
       }
 
       break;
+
+
+    ////////////////
 
     case 3:                                                               //for description look at case 0, works exactly the same, except for weight instead of height
 
@@ -674,8 +697,11 @@ START14:
       }
 
       break;
+
+
+      ////////////////
+
   }
-  
   delay(100);
 
   goto START;
@@ -688,7 +714,6 @@ END_SETTINGS:
   start_millis_loop_plus3000 = start_millis_loop + 3000;
   u8x8.clear();
   Serial.print(temporary_height);
-  
 }
 
 
@@ -731,7 +756,6 @@ void Running()  {
   if (EEPROM.read(address_gender) == "m")  {
     step_length = float(EEPROM.read(address_height)) * 45.0 / 100.0;
   }
-  
   else  {
     step_length = float(EEPROM.read(address_height)) * 43.0 / 100.0;
   }
@@ -791,8 +815,11 @@ void Running()  {
   runnings = true;
 
   attachInterrupt(digitalPinToInterrupt(pin_ISR_heartRate), heartRate, RISING);       //pin_ISR_heartRate
+  //attachInterrupt(digitalPinToInterrupt(pin_ISR_stepCount), stepCount, RISING);     //pin_ISR_stepCount
+  //Timer1.attachInterrupt(write_to_SD);
 
   unsigned long start_millis_save = millis();
+
 
   //Start of displaying to display
 START7:                                                                             //the following code will write all our information to display and calculate the variables
@@ -878,7 +905,6 @@ START5:
         u8x8.setCursor(12, 3);
         u8x8.print(F("km"));
       }
-      
       else  {
         distance = (((float)step_length * (float)steps_total) / 100000.0) / 1.609;
         u8x8.setCursor(12, 3);
@@ -919,7 +945,6 @@ START5:
         if (mode_running == 3) {
           mode_running = 0;
         }
-        
         delay(500);
         goto START7;
       }
@@ -1005,7 +1030,7 @@ START15:
 
       break;
   }
-//end of displaying to display
+  //end of displaying to display
 
 
 END_RUNNING:
@@ -1101,11 +1126,20 @@ void write_to_SD()  {
     beats_since = 0;
     steps_since = 0;
   }
+  //name of the variables in fisrt line for csv
 }
 
 void animation(char text[16], byte x) {                                                         //Animation for text on display
   for (byte i = 0; i < 16; i++) {
     u8x8.setCursor(i, x);
+    u8x8.print(text[i]);
+    delay(100);
+  }
+}
+
+void animation2(char text[8], byte x) {                                                         //Animation for text on display
+  for (byte i = 0; i < 8; i++) {
+    u8x8.setCursor(i + 4, x);
     u8x8.print(text[i]);
     delay(100);
   }
