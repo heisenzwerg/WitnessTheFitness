@@ -65,11 +65,11 @@ void loop()
 
   totvect = sqrt(((xaccl) * (xaccl)) + ((yaccl) * (yaccl))); //pythagoras vector calculation to combine X (up/down) and Y (forward/backwards movement)
   //Serial.println(totvect);
-  delay(200);
+  delay(100);
 
   if (totvect > threshhold && flag == 0)
   {
-    Serial.print(1);
+    Serial.println(1);
     flag = 1;                                            //if threshhold is crossed, count a step and set the flag.
 
   }
